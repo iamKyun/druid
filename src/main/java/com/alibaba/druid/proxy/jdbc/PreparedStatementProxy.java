@@ -16,16 +16,20 @@
 package com.alibaba.druid.proxy.jdbc;
 
 import java.sql.PreparedStatement;
+import java.util.List;
 import java.util.Map;
 
 /**
  * @author wenshao [szujobs@hotmail.com]
+ * @author kyun
  */
 public interface PreparedStatementProxy extends PreparedStatement, StatementProxy {
 
     String getSql();
 
     PreparedStatement getRawObject();
-    
+
     Map<Integer, JdbcParameter> getParameters();
+
+    List<Map<Integer, JdbcParameter>> getBatchParameters();
 }
