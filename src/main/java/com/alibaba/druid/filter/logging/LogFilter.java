@@ -18,6 +18,7 @@ package com.alibaba.druid.filter.logging;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import com.alibaba.druid.DbType;
@@ -34,7 +35,6 @@ import com.alibaba.druid.proxy.jdbc.ResultSetProxy;
 import com.alibaba.druid.proxy.jdbc.StatementProxy;
 import com.alibaba.druid.sql.SQLUtils;
 import com.alibaba.druid.sql.SQLUtils.FormatOption;
-import com.alibaba.druid.util.JdbcConstants;
 import com.alibaba.druid.util.JdbcUtils;
 import com.alibaba.druid.util.MySqlUtils;
 
@@ -367,7 +367,7 @@ public abstract class LogFilter extends FilterEventAdapter implements LogFilterM
         if (connection == null) {
             return;
         }
-        
+
         if (connectionConnectAfterLogEnable && isConnectionLogEnabled()) {
             StringBuilder msg = new StringBuilder(34)
                     .append("{conn-")
@@ -568,16 +568,30 @@ public abstract class LogFilter extends FilterEventAdapter implements LogFilterM
             return;
         }
 
-        List<Object> parameters = new ArrayList<Object>(parametersSize);
-        for (int i = 0; i < parametersSize; ++i) {
-            JdbcParameter jdbcParam = statement.getParameter(i);
-            parameters.add(jdbcParam != null
-                    ? jdbcParam.getValue()
-                    : null);
+        List<Map<Integer, JdbcParameter>> parameterLists;
+        if (statement.getBatchSize() > 0) {
+            parameterLists = statement.getBatchParameters();
+        } else {
+            parameterLists = new ArrayList<>();
+            parameterLists.add(statement.getParameters());
         }
-
+        List<Object> parameters;
+        StringBuilder formattedSql = new StringBuilder();
         DbType dbType = DbType.of(statement.getConnectionProxy().getDirectDataSource().getDbType());
-        String formattedSql = SQLUtils.format(sql, dbType, parameters, this.statementSqlFormatOption);
+
+        for (Map<Integer, JdbcParameter> parameterList : parameterLists) {
+            parameters = new ArrayList<Object>(parametersSize);
+            for (int i = 0; i < parametersSize; ++i) {
+                JdbcParameter jdbcParam = parameterList.get(i);
+                parameters.add(jdbcParam != null
+                                       ? jdbcParam.getValue()
+                                       : null);
+            }
+            if (formattedSql.length() > 0) {
+                formattedSql.append("\n;\n");
+            }
+            formattedSql.append(SQLUtils.format(sql, dbType, parameters, this.statementSqlFormatOption));
+        }
         statementLog("{conn-" + statement.getConnectionProxy().getId() + ", " + stmtId(statement) + "} executed. "
                      + formattedSql);
     }
@@ -919,7 +933,7 @@ public abstract class LogFilter extends FilterEventAdapter implements LogFilterM
         }
         return null;
     }
-    
+
     protected String savepointToString(Savepoint savePoint) {
     	String savePointString = null;
     	try{

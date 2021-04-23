@@ -15,11 +15,11 @@
  */
 package com.alibaba.druid.proxy.jdbc;
 
+import com.alibaba.druid.stat.JdbcSqlStat;
+
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
-
-import com.alibaba.druid.stat.JdbcSqlStat;
 
 /**
  * @author wenshao [szujobs@hotmail.com]
@@ -33,27 +33,30 @@ public interface StatementProxy extends Statement, WrapperProxy {
     List<String> getBatchSqlList();
 
     String getBatchSql();
-    
+
     JdbcSqlStat getSqlStat();
-    
+
     StatementExecuteType getLastExecuteType();
-    
+
     void setSqlStat(JdbcSqlStat sqlStat);
 
     String getLastExecuteSql();
-    
+
     long getLastExecuteStartNano();
     void setLastExecuteStartNano(long lastExecuteStartNano);
     void setLastExecuteStartNano();
-    
+
     long getLastExecuteTimeNano();
     void setLastExecuteTimeNano(long nano);
     void setLastExecuteTimeNano();
-    
+
     Map<Integer, JdbcParameter> getParameters();
-    
+    List<Map<Integer, JdbcParameter>> getBatchParameters();
+
     int getParametersSize();
+    int getBatchSize();
     JdbcParameter getParameter(int i);
-    
+    JdbcParameter getBatchParameters(int i, int j);
+
     boolean isFirstResultSet();
 }

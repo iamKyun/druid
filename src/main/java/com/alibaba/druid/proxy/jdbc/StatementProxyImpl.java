@@ -15,19 +15,18 @@
  */
 package com.alibaba.druid.proxy.jdbc;
 
+import com.alibaba.druid.filter.FilterChainImpl;
+import com.alibaba.druid.stat.JdbcSqlStat;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import com.alibaba.druid.filter.FilterChainImpl;
-import com.alibaba.druid.stat.JdbcSqlStat;
 
 /**
  * @author wenshao [szujobs@hotmail.com]
@@ -515,6 +514,11 @@ public class StatementProxyImpl extends WrapperProxyImpl implements StatementPro
         return Collections.emptyMap();
     }
 
+    @Override
+    public List<Map<Integer, JdbcParameter>> getBatchParameters() {
+        return Collections.emptyList();
+    }
+
     public JdbcSqlStat getSqlStat() {
         return sqlStat;
     }
@@ -582,8 +586,16 @@ public class StatementProxyImpl extends WrapperProxyImpl implements StatementPro
         return 0;
     }
 
+    @Override public int getBatchSize() {
+        return 0;
+    }
+
     @Override
     public JdbcParameter getParameter(int i) {
+        return null;
+    }
+
+    @Override public JdbcParameter getBatchParameters(int i, int j) {
         return null;
     }
 }
