@@ -596,7 +596,7 @@ public class StatementProxyImpl extends WrapperProxyImpl implements StatementPro
         return null;
     }
 
-    @Override public JdbcParameter getBatchParameters(int i, int j) {
+    @Override public JdbcParameter getBatchParameter(int i, int j) {
         return null;
     }
 }

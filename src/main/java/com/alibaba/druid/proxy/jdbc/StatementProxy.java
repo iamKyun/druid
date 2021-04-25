@@ -56,7 +56,7 @@ public interface StatementProxy extends Statement, WrapperProxy {
     int getParametersSize();
     int getBatchSize();
     JdbcParameter getParameter(int i);
-    JdbcParameter getBatchParameters(int i, int j);
+    JdbcParameter getBatchParameter(int i, int j);
 
     boolean isFirstResultSet();
 }

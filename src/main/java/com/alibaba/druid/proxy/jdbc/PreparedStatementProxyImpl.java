@@ -108,7 +108,7 @@ public class PreparedStatementProxyImpl extends StatementProxyImpl implements Pr
             for (int i = 0; i < batchSize; i++) {
                 paramMap = new HashMap<>(parametersSize);
                 for (int j = 0; j < parametersSize; j++) {
-                    paramMap.put(j, getBatchParameters(i, j));
+                    paramMap.put(j, getBatchParameter(i, j));
                 }
                 batchParamMapList.add(paramMap);
             }
@@ -159,7 +159,7 @@ public class PreparedStatementProxyImpl extends StatementProxyImpl implements Pr
         return this.parameters[i];
     }
 
-    public JdbcParameter getBatchParameters(int i, int j) {
+    public JdbcParameter getBatchParameter(int i, int j) {
         if (batchParameters == null || i >= batchSize || j >= parametersSize) {
             return null;
         }
