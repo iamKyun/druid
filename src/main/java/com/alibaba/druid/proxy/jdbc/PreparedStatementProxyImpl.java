@@ -105,10 +105,10 @@ public class PreparedStatementProxyImpl extends StatementProxyImpl implements Pr
         if (batchParamMapList == null) {
             batchParamMapList = new ArrayList<>();
             HashMap<Integer, JdbcParameter> paramMap;
-            for (JdbcParameter[] batchParameter : batchParameters) {
+            for (int i = 0; i < batchSize; i++) {
                 paramMap = new HashMap<>(parametersSize);
-                for (int i = 0; i < parametersSize; ++i) {
-                    paramMap.put(i, batchParameter[i]);
+                for (int j = 0; j < parametersSize; j++) {
+                    paramMap.put(j, getBatchParameters(i, j));
                 }
                 batchParamMapList.add(paramMap);
             }
@@ -148,8 +148,8 @@ public class PreparedStatementProxyImpl extends StatementProxyImpl implements Pr
         return parametersSize;
     }
 
-    public boolean hasBatch() {
-        return batchParameters != null && batchParameters.length > 1;
+    public int getBatchSize() {
+        return this.batchSize;
     }
 
     public JdbcParameter getParameter(int i) {
@@ -160,10 +160,10 @@ public class PreparedStatementProxyImpl extends StatementProxyImpl implements Pr
     }
 
     public JdbcParameter getBatchParameters(int i, int j) {
-        if (batchParameters == null || i > batchParameters.length || j > parametersSize) {
+        if (batchParameters == null || i >= batchSize || j >= parametersSize) {
             return null;
         }
-        return this.batchParameters[j][i];
+        return this.batchParameters[i][j];
     }
 
     public String getSql() {
@@ -176,12 +176,11 @@ public class PreparedStatementProxyImpl extends StatementProxyImpl implements Pr
 
     @Override
     public void addBatch() throws SQLException {
-        // parameters should be stored
-        if (batchParameters == null) {
-            batchParameters = new JdbcParameter[4][];
-        }
+
         if (this.parameters != null) {
-            batchSize++;
+            if (batchParameters == null) {
+                batchParameters = new JdbcParameter[4][];
+            }
             // ensure capacity
             if (batchSize >= batchParameters.length) {
                 int oldCapacity = batchParameters.length;
@@ -193,6 +192,7 @@ public class PreparedStatementProxyImpl extends StatementProxyImpl implements Pr
                 batchParameters = Arrays.copyOf(batchParameters, newCapacity);
             }
             batchParameters[batchSize] = this.parameters.clone();
+            batchSize++;
         }
 
         createChain().preparedStatement_addBatch(this);

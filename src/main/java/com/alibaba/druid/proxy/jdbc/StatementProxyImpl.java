@@ -586,7 +586,8 @@ public class StatementProxyImpl extends WrapperProxyImpl implements StatementPro
         return 0;
     }
 
-    @Override public int getBatchSize() {
+    @Override
+    public int getBatchSize() {
         return 0;
     }
 
