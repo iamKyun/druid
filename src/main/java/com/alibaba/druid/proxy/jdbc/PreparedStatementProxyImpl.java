@@ -46,7 +46,6 @@ import java.util.Map;
 
 /**
  * @author wenshao [szujobs@hotmail.com]
- * @author kyun
  */
 public class PreparedStatementProxyImpl extends StatementProxyImpl implements PreparedStatementProxy {
 
@@ -54,8 +53,9 @@ public class PreparedStatementProxyImpl extends StatementProxyImpl implements Pr
     private         PreparedStatement                 statement;
     private         JdbcParameter[]                   parameters;
     private         int                               parametersSize;
+    private         int                               batchSize;
     private         Map<Integer, JdbcParameter>       paramMap;
-    private         List<JdbcParameter[]>             batchParameters;
+    private         JdbcParameter[][]                 batchParameters;
     private         List<Map<Integer, JdbcParameter>> batchParamMapList;
 
     public PreparedStatementProxyImpl(ConnectionProxy connection, PreparedStatement statement, String sql, long id) {
@@ -117,10 +117,6 @@ public class PreparedStatementProxyImpl extends StatementProxyImpl implements Pr
         return batchParamMapList;
     }
 
-    public boolean hasBatch() {
-        return batchParameters != null && batchParameters.size() > 1;
-    }
-
     protected void setStatement(PreparedStatement statement) {
         super.statement = statement;
         this.statement = statement;
@@ -152,11 +148,22 @@ public class PreparedStatementProxyImpl extends StatementProxyImpl implements Pr
         return parametersSize;
     }
 
+    public boolean hasBatch() {
+        return batchParameters != null && batchParameters.length > 1;
+    }
+
     public JdbcParameter getParameter(int i) {
         if (i > parametersSize) {
             return null;
         }
         return this.parameters[i];
+    }
+
+    public JdbcParameter getBatchParameters(int i, int j) {
+        if (batchParameters == null || i > batchParameters.length || j > parametersSize) {
+            return null;
+        }
+        return this.batchParameters[j][i];
     }
 
     public String getSql() {
@@ -169,12 +176,23 @@ public class PreparedStatementProxyImpl extends StatementProxyImpl implements Pr
 
     @Override
     public void addBatch() throws SQLException {
-        // parameters should be saved
+        // parameters should be stored
         if (batchParameters == null) {
-            batchParameters = new ArrayList<>();
+            batchParameters = new JdbcParameter[4][];
         }
         if (this.parameters != null) {
-            batchParameters.add(this.parameters.clone());
+            batchSize++;
+            // ensure capacity
+            if (batchSize >= batchParameters.length) {
+                int oldCapacity = batchParameters.length;
+                int newCapacity = oldCapacity + (oldCapacity >> 1);
+                if (newCapacity <= 4) {
+                    newCapacity = 4;
+                }
+
+                batchParameters = Arrays.copyOf(batchParameters, newCapacity);
+            }
+            batchParameters[batchSize] = this.parameters.clone();
         }
 
         createChain().preparedStatement_addBatch(this);
@@ -183,8 +201,9 @@ public class PreparedStatementProxyImpl extends StatementProxyImpl implements Pr
     @Override
     public void clearParameters() throws SQLException {
         if (batchParameters != null) {
-            batchParameters.clear();
+            batchParameters = null;
         }
+        batchSize = 0;
         createChain().preparedStatement_clearParameters(this);
     }
 

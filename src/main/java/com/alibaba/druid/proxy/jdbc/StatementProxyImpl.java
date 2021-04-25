@@ -519,11 +519,6 @@ public class StatementProxyImpl extends WrapperProxyImpl implements StatementPro
         return Collections.emptyList();
     }
 
-    @Override
-    public boolean hasBatch() {
-        return batchSqlList != null && batchSqlList.size() > 1;
-    }
-
     public JdbcSqlStat getSqlStat() {
         return sqlStat;
     }
@@ -591,8 +586,16 @@ public class StatementProxyImpl extends WrapperProxyImpl implements StatementPro
         return 0;
     }
 
+    @Override public int getBatchSize() {
+        return 0;
+    }
+
     @Override
     public JdbcParameter getParameter(int i) {
+        return null;
+    }
+
+    @Override public JdbcParameter getBatchParameters(int i, int j) {
         return null;
     }
 }

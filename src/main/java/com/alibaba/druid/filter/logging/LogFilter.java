@@ -40,7 +40,6 @@ import com.alibaba.druid.util.MySqlUtils;
 
 /**
  * @author wenshao [szujobs@hotmail.com]
- * @author kyun
  */
 public abstract class LogFilter extends FilterEventAdapter implements LogFilterMBean {
     protected String          dataSourceLoggerName                 = "druid.sql.DataSource";
@@ -570,9 +569,9 @@ public abstract class LogFilter extends FilterEventAdapter implements LogFilterM
         }
 
         List<Map<Integer, JdbcParameter>> parameterLists;
-        if (statement.hasBatch()) {
+        if (statement.getBatchSize() > 0) {
             parameterLists = statement.getBatchParameters();
-        }else{
+        } else {
             parameterLists = new ArrayList<>();
             parameterLists.add(statement.getParameters());
         }

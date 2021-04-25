@@ -21,7 +21,6 @@ import java.util.Map;
 
 /**
  * @author wenshao [szujobs@hotmail.com]
- * @author kyun
  */
 public interface PreparedStatementProxy extends PreparedStatement, StatementProxy {
 
